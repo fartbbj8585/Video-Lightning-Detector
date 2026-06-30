@@ -17,11 +17,29 @@ if (-not (Test-Path $ExePath)) {
     exit 1
 }
 
+# Auto-sign the exe with the Lightning Detector cert if it exists.
+$signingCert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert -ErrorAction SilentlyContinue |
+    Where-Object { $_.Subject -eq "CN=Lightning Detector" } |
+    Select-Object -First 1
+if ($signingCert) {
+    Write-Host "Signing exe with Lightning Detector certificate..." -ForegroundColor Cyan
+    $sig = Set-AuthenticodeSignature -FilePath $ExePath -Certificate $signingCert
+    if ($sig.Status -eq "Valid") {
+        Write-Host "  Signed successfully." -ForegroundColor Green
+    } else {
+        Write-Host "  Warning: signing status was '$($sig.Status)' - continuing anyway." -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "No signing certificate found - skipping code signing." -ForegroundColor Yellow
+    Write-Host "  Run the self-signed cert commands in README to enable signing." -ForegroundColor Yellow
+}
+
 # Locate Inno Setup's command-line compiler (iscc.exe); install it via
 # winget if it isn't present yet.
 $iscc = Get-Command iscc -ErrorAction SilentlyContinue
 if (-not $iscc) {
     $candidatePaths = @(
+        "${env:LOCALAPPDATA}\Programs\Inno Setup 6\ISCC.exe",
         "${env:ProgramFiles}\Inno Setup 6\ISCC.exe",
         "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
     )

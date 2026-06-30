@@ -64,6 +64,9 @@ enum {
     ID_PROGRESS      = 1008,
     ID_LABEL_STATUS  = 1009,
     ID_LABEL_DROP    = 1010,
+    ID_BTN_DAY       = 1011,
+    ID_BTN_NIGHT     = 1012,
+    ID_LABEL_MODE    = 1013,
     // Timer
     ID_TIMER_POLL    = 2001,
     // Settings dialog edit boxes
@@ -109,6 +112,42 @@ static std::mutex                g_logMutex;
 static std::string               g_lastJsonPath;
 
 static LightningDetector         g_detector;
+
+// Detection mode: 0=custom, 1=day, 2=night
+static int g_detectionMode = 0;
+static HWND g_btnDay   = nullptr;
+static HWND g_btnNight = nullptr;
+static HWND g_lblMode  = nullptr;
+
+// Day mode: bright sky, high ambient light, lightning must stand out strongly
+// from a brighter-than-average background. Higher threshold and fraction
+// required to avoid sun glare / cloud reflections being counted as flashes.
+static LightningDetector::Params DayModeParams() {
+    LightningDetector::Params p;
+    p.brightness_threshold    = 45.0f;   // stronger contrast needed vs bright sky
+    p.pixel_fraction_required = 0.08f;   // larger area must light up (reduces glare FP)
+    p.min_event_gap_frames    = 20;      // slightly longer gap - day storms tend to flash distinctly
+    p.max_threads             = 0;
+    p.target_analysis_fps     = 60.0;
+    p.analysis_max_dimension  = 720;
+    p.use_gpu                 = true;
+    return p;
+}
+
+// Night mode: dark background, even faint lightning creates a huge contrast
+// spike. Lower threshold catches distant or weak strikes; smaller pixel
+// fraction required since night lightning often illuminates only part of sky.
+static LightningDetector::Params NightModeParams() {
+    LightningDetector::Params p;
+    p.brightness_threshold    = 18.0f;   // low threshold - dark background makes flashes obvious
+    p.pixel_fraction_required = 0.03f;   // small fraction - night sky, only part lights up
+    p.min_event_gap_frames    = 12;      // tighter gap - night storms can flash in rapid bursts
+    p.max_threads             = 0;
+    p.target_analysis_fps     = 60.0;
+    p.analysis_max_dimension  = 720;
+    p.use_gpu                 = true;
+    return p;
+}
 
 // Shared progress info (written by worker, read by main thread via WM_WORKER_PROG)
 struct ProgInfo { int vi, vt, fd, ft; std::string msg; };
@@ -545,32 +584,44 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         g_btnSaveAs = CreateWindowW(L"BUTTON", L"Save JSON As...",
             WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON, 490, topY, 130, 32, hwnd, (HMENU)ID_BTN_SAVEAS, nullptr, nullptr);
 
+        //  Mode row (second toolbar row) 
+        const int modeY = topY + 40;
+        g_lblMode = CreateWindowW(L"STATIC", L"Detection Mode:",
+            WS_CHILD|WS_VISIBLE, 10, modeY + 6, 120, 20, hwnd, (HMENU)ID_LABEL_MODE, nullptr, nullptr);
+        g_btnDay = CreateWindowW(L"BUTTON", L"Day",
+            WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON, 135, modeY, 80, 26, hwnd, (HMENU)ID_BTN_DAY, nullptr, nullptr);
+        g_btnNight = CreateWindowW(L"BUTTON", L"Night",
+            WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON, 223, modeY, 80, 26, hwnd, (HMENU)ID_BTN_NIGHT, nullptr, nullptr);
+        HWND lblModeHint = CreateWindowW(L"STATIC",
+            L"Optimises detection settings for the lighting conditions in your footage.",
+            WS_CHILD|WS_VISIBLE, 312, modeY + 6, 450, 18, hwnd, nullptr, nullptr, nullptr);
+
         //  Drop zone label 
         HWND lblDrop = CreateWindowW(L"STATIC",
             L"Drag & drop video files here, or use 'Add Videos' above",
             WS_CHILD|WS_VISIBLE|SS_CENTER,
-            10, topY + 40, 760, 20, hwnd, (HMENU)ID_LABEL_DROP, nullptr, nullptr);
+            10, topY + 75, 760, 20, hwnd, (HMENU)ID_LABEL_DROP, nullptr, nullptr);
 
         //  File list 
         g_listbox = CreateWindowW(L"LISTBOX", L"",
             WS_CHILD|WS_VISIBLE|WS_BORDER|WS_VSCROLL|LBS_NOTIFY,
-            10, topY + 65, 760, 150, hwnd, (HMENU)ID_LISTBOX, nullptr, nullptr);
+            10, topY + 100, 760, 130, hwnd, (HMENU)ID_LISTBOX, nullptr, nullptr);
 
         //  Status label 
         g_lblStatus = CreateWindowW(L"STATIC", L"Idle - add videos to get started.",
             WS_CHILD|WS_VISIBLE,
-            10, topY + 225, 760, 20, hwnd, (HMENU)ID_LABEL_STATUS, nullptr, nullptr);
+            10, topY + 242, 760, 20, hwnd, (HMENU)ID_LABEL_STATUS, nullptr, nullptr);
 
         //  Progress bar 
         g_progress = CreateWindowW(PROGRESS_CLASSW, L"",
             WS_CHILD|WS_VISIBLE|PBS_SMOOTH,
-            10, topY + 250, 760, 18, hwnd, (HMENU)ID_PROGRESS, nullptr, nullptr);
+            10, topY + 266, 760, 18, hwnd, (HMENU)ID_PROGRESS, nullptr, nullptr);
         SendMessageW(g_progress, PBM_SETRANGE, 0, MAKELPARAM(0, 1000));
 
         //  Log 
         g_log = CreateWindowW(L"EDIT", L"",
             WS_CHILD|WS_VISIBLE|WS_BORDER|WS_VSCROLL|ES_MULTILINE|ES_READONLY|ES_AUTOVSCROLL,
-            10, topY + 275, 760, 280, hwnd, (HMENU)ID_LOG, nullptr, nullptr);
+            10, topY + 292, 760, 260, hwnd, (HMENU)ID_LOG, nullptr, nullptr);
 
         // Fonts
         g_fontUI    = CreateFontW(-15, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
@@ -583,13 +634,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
             DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI");
         g_bgBrush   = CreateSolidBrush(COLOR_BG);
 
-        SetUIFont(g_btnAdd, g_fontUI);
-        SetUIFont(g_btnClear, g_fontUI);
+        SetUIFont(g_btnAdd,    g_fontUI);
+        SetUIFont(g_btnClear,  g_fontUI);
         SetUIFont(btnSettings, g_fontUI);
-        SetUIFont(g_btnAnalyse, g_fontBold);
+        SetUIFont(g_btnAnalyse,g_fontBold);
         SetUIFont(g_btnSaveAs, g_fontUI);
-        SetUIFont(lblDrop, g_fontUI);
-        SetUIFont(g_listbox, g_fontUI);
+        SetUIFont(g_lblMode,   g_fontBold);
+        SetUIFont(g_btnDay,    g_fontUI);
+        SetUIFont(g_btnNight,  g_fontUI);
+        SetUIFont(lblModeHint, g_fontSmall);
+        SetUIFont(lblDrop,     g_fontUI);
+        SetUIFont(g_listbox,   g_fontUI);
         SetUIFont(g_lblStatus, g_fontUI);
         SetUIFont(g_log, CreateFontW(-14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
             ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
@@ -699,11 +754,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
                 AppendLog("File list cleared.");
             }
         }
+        else if (id == ID_BTN_DAY) {
+            g_detectionMode = 1;
+            g_detector.setParams(DayModeParams());
+            // Show active state visually via button text
+            SetWindowTextW(g_btnDay,   L"[Day]");
+            SetWindowTextW(g_btnNight, L"Night");
+            AppendLog("Mode: DAY  (threshold=45, fraction=0.08, gap=20)");
+            AppendLog("Tuned for bright-sky footage - higher contrast required to avoid glare false positives.");
+        }
+        else if (id == ID_BTN_NIGHT) {
+            g_detectionMode = 2;
+            g_detector.setParams(NightModeParams());
+            SetWindowTextW(g_btnDay,   L"Day");
+            SetWindowTextW(g_btnNight, L"[Night]");
+            AppendLog("Mode: NIGHT  (threshold=18, fraction=0.03, gap=12)");
+            AppendLog("Tuned for dark footage - lower threshold catches faint/distant strikes.");
+        }
         else if (id == ID_BTN_SETTINGS) {
             auto p = g_detector.getParams();
             if (ShowSettingsDialog(hwnd, &p)) {
                 g_detector.setParams(p);
-                AppendLog("Settings updated.");
+                // User manually customised - clear mode buttons
+                g_detectionMode = 0;
+                SetWindowTextW(g_btnDay,   L"Day");
+                SetWindowTextW(g_btnNight, L"Night");
+                AppendLog("Settings updated (custom mode).");
             } else {
                 AppendLog("Settings unchanged (cancelled).");
             }
@@ -776,7 +852,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
                     es << "  [" << ev.description << "] "
                        << "t=" << std::fixed << std::setprecision(3) << ev.timestamp_seconds << "s"
                        << "  frame=" << ev.frame_number
-                       << "  confidence=" << std::setprecision(1) << (ev.confidence*100.f) << "%";
+                       << "  confidence=" << std::fixed << std::setprecision(2) << (ev.confidence*100.f) << "%";
                     AppendLog(es.str());
                 }
             } else {
@@ -845,7 +921,22 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR, int nShow) {
     // Warm up the GPU/OpenCL context in the background so the window shows
     // instantly (no startup stall) while the GPU is still ready by the
     // time the user clicks Analyse.
-    std::thread([]{ (void)cv::ocl::haveOpenCL(); }).detach();
+    std::thread([](){
+        if (cv::ocl::haveOpenCL()) {
+            // Force GPU context creation at startup so first Analyse is instant.
+            cv::ocl::Context ctx;
+            ctx.create(4 /* CL_DEVICE_TYPE_GPU */);
+            // Log whichever device OpenCV actually bound to.
+            cv::ocl::Device dev = cv::ocl::Device::getDefault();
+            std::string name = dev.name();
+            if (!name.empty())
+                AppendLog("OpenCL device: " + name);
+            else
+                AppendLog("OpenCL: available but no GPU device found - using CPU path.");
+        } else {
+            AppendLog("OpenCL not available - running CPU-only.");
+        }
+    }).detach();
 
     ShowWindow(g_hwnd, nShow);
     UpdateWindow(g_hwnd);

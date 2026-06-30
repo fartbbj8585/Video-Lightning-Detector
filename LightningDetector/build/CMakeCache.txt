@@ -187,8 +187,10 @@ CMAKE_STATIC_LINKER_FLAGS_RELEASE:STRING=
 // during RELWITHDEBINFO builds.
 CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 
-//The CMake toolchain file
-CMAKE_TOOLCHAIN_FILE:FILEPATH=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+//Path to a CMake toolchain file, read early in the CMake run,
+// that specifies the compilers, toolchain utilities, and target-platform
+// information used when cross-compiling.
+CMAKE_TOOLCHAIN_FILE:UNINITIALIZED=C:\vcpkg\scripts\buildsystems\vcpkg.cmake
 
 //If this value is on, makefiles will be generated without the
 // .SILENT directive, and all commands will be echoed to the console
@@ -310,6 +312,11 @@ OpenCL_DIR:PATH=C:/vcpkg/installed/x64-windows/share/opencl
 //The directory containing a CMake configuration file for OpenCV.
 OpenCV_DIR:PATH=C:/vcpkg/installed/x64-windows/share/opencv4
 
+//Arguments to supply to pkg-config
+PKG_CONFIG_ARGN:STRING=
+
+PKG_CONFIG_EXECUTABLE:STRING=C:/vcpkg/installed/x64-windows/share/ffmpeg/../../../x64-windows/tools/pkgconf/pkgconf.exe
+
 //The directory containing a CMake configuration file for Protobuf.
 Protobuf_DIR:PATH=C:/vcpkg/installed/x64-windows/share/protobuf
 
@@ -385,6 +392,9 @@ flatbuffers_DIR:PATH=C:/vcpkg/installed/x64-windows/share/flatbuffers
 
 //The directory containing a CMake configuration file for nlohmann_json.
 nlohmann_json_DIR:PATH=C:/vcpkg/installed/x64-windows/share/nlohmann_json
+
+//Path to a library.
+pkgcfg_lib_PKG_libavcodec_avcodec:FILEPATH=C:/vcpkg/installed/x64-windows/lib/avcodec.lib
 
 //CMake built-in FindProtobuf.cmake module compatible
 protobuf_MODULE_COMPATIBLE:BOOL=OFF
@@ -566,6 +576,8 @@ FFMPEG_libswscale_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 FIND_PACKAGE_MESSAGE_DETAILS_FFMPEG:INTERNAL=[optimized;C:/vcpkg/installed/x64-windows/lib/avdevice.lib;debug;C:/vcpkg/installed/x64-windows/debug/lib/avdevice.lib;optimized;C:/vcpkg/installed/x64-windows/lib/avfilter.lib;debug;C:/vcpkg/installed/x64-windows/debug/lib/avfilter.lib;optimized;C:/vcpkg/installed/x64-windows/lib/avformat.lib;debug;C:/vcpkg/installed/x64-windows/debug/lib/avformat.lib;optimized;C:/vcpkg/installed/x64-windows/lib/avcodec.lib;debug;C:/vcpkg/installed/x64-windows/debug/lib/avcodec.lib;optimized;C:/vcpkg/installed/x64-windows/lib/swresample.lib;debug;C:/vcpkg/installed/x64-windows/debug/lib/swresample.lib;optimized;C:/vcpkg/installed/x64-windows/lib/swscale.lib;debug;C:/vcpkg/installed/x64-windows/debug/lib/swscale.lib;optimized;C:/vcpkg/installed/x64-windows/lib/avutil.lib;debug;C:/vcpkg/installed/x64-windows/debug/lib/avutil.lib][C:/vcpkg/installed/x64-windows/lib;C:/vcpkg/installed/x64-windows/debug/lib][C:/vcpkg/installed/x64-windows/include][v()]
 //Details about finding OpenCV
 FIND_PACKAGE_MESSAGE_DETAILS_OpenCV:INTERNAL=[C:/vcpkg/installed/x64-windows][v4.12.0()]
+//Details about finding PkgConfig
+FIND_PACKAGE_MESSAGE_DETAILS_PkgConfig:INTERNAL=[C:/vcpkg/installed/x64-windows/share/ffmpeg/../../../x64-windows/tools/pkgconf/pkgconf.exe][v2.5.1()]
 //Details about finding Protobuf
 FIND_PACKAGE_MESSAGE_DETAILS_Protobuf:INTERNAL=[C:/vcpkg/installed/x64-windows/tools/protobuf/protoc.exe][optimized;C:/vcpkg/installed/x64-windows/bin/libprotobuf.dll;debug;C:/vcpkg/installed/x64-windows/debug/bin/libprotobufd.dll][C:/vcpkg/installed/x64-windows/include][v33.4.0()]
 //Details about finding TIFF
@@ -574,6 +586,45 @@ FIND_PACKAGE_MESSAGE_DETAILS_TIFF:INTERNAL=[optimized;C:/vcpkg/installed/x64-win
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 //Details about finding nlohmann_json
 FIND_PACKAGE_MESSAGE_DETAILS_nlohmann_json:INTERNAL=[C:/vcpkg/installed/x64-windows/share/nlohmann_json/nlohmann_jsonConfig.cmake][v3.12.0()]
+//ADVANCED property for variable: PKG_CONFIG_ARGN
+PKG_CONFIG_ARGN-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PKG_CONFIG_EXECUTABLE
+PKG_CONFIG_EXECUTABLE-ADVANCED:INTERNAL=1
+PKG_libavcodec_CFLAGS:INTERNAL=-IC:/vcpkg/installed/x64-windows/include
+PKG_libavcodec_CFLAGS_I:INTERNAL=
+PKG_libavcodec_CFLAGS_OTHER:INTERNAL=
+PKG_libavcodec_FOUND:INTERNAL=1
+PKG_libavcodec_INCLUDEDIR:INTERNAL=C:/vcpkg/installed/x64-windows/include
+PKG_libavcodec_INCLUDE_DIRS:INTERNAL=C:/vcpkg/installed/x64-windows/include
+PKG_libavcodec_LDFLAGS:INTERNAL=-LC:/vcpkg/installed/x64-windows/lib;-lavcodec
+PKG_libavcodec_LDFLAGS_OTHER:INTERNAL=
+PKG_libavcodec_LIBDIR:INTERNAL=C:/vcpkg/installed/x64-windows/lib
+PKG_libavcodec_LIBRARIES:INTERNAL=avcodec
+PKG_libavcodec_LIBRARY_DIRS:INTERNAL=C:/vcpkg/installed/x64-windows/lib
+PKG_libavcodec_LIBS:INTERNAL=
+PKG_libavcodec_LIBS_L:INTERNAL=
+PKG_libavcodec_LIBS_OTHER:INTERNAL=
+PKG_libavcodec_LIBS_PATHS:INTERNAL=
+PKG_libavcodec_MODULE_NAME:INTERNAL=libavcodec
+PKG_libavcodec_PREFIX:INTERNAL=C:/vcpkg/installed/x64-windows
+PKG_libavcodec_STATIC_CFLAGS:INTERNAL=-IC:/vcpkg/installed/x64-windows/include
+PKG_libavcodec_STATIC_CFLAGS_I:INTERNAL=
+PKG_libavcodec_STATIC_CFLAGS_OTHER:INTERNAL=
+PKG_libavcodec_STATIC_INCLUDE_DIRS:INTERNAL=C:/vcpkg/installed/x64-windows/include
+PKG_libavcodec_STATIC_LDFLAGS:INTERNAL=-LC:/vcpkg/installed/x64-windows/lib;-lavcodec;-lmfuuid;-lole32;-lstrmiids;-lole32;-luser32;-lswresample;-lavutil;-luser32;-lbcrypt
+PKG_libavcodec_STATIC_LDFLAGS_OTHER:INTERNAL=
+PKG_libavcodec_STATIC_LIBDIR:INTERNAL=
+PKG_libavcodec_STATIC_LIBRARIES:INTERNAL=avcodec;mfuuid;ole32;strmiids;ole32;user32;swresample;avutil;user32;bcrypt
+PKG_libavcodec_STATIC_LIBRARY_DIRS:INTERNAL=C:/vcpkg/installed/x64-windows/lib
+PKG_libavcodec_STATIC_LIBS:INTERNAL=
+PKG_libavcodec_STATIC_LIBS_L:INTERNAL=
+PKG_libavcodec_STATIC_LIBS_OTHER:INTERNAL=
+PKG_libavcodec_STATIC_LIBS_PATHS:INTERNAL=
+PKG_libavcodec_VERSION:INTERNAL=62.28.101
+PKG_libavcodec_libavcodec_INCLUDEDIR:INTERNAL=
+PKG_libavcodec_libavcodec_LIBDIR:INTERNAL=
+PKG_libavcodec_libavcodec_PREFIX:INTERNAL=
+PKG_libavcodec_libavcodec_VERSION:INTERNAL=
 //ADVANCED property for variable: TIFF_INCLUDE_DIR
 TIFF_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: TIFF_LIBRARY_DEBUG
@@ -594,6 +645,11 @@ Z_VCPKG_CHECK_MANIFEST_MODE:INTERNAL=OFF
 Z_VCPKG_POWERSHELL_PATH:INTERNAL=C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe
 //Vcpkg root directory
 Z_VCPKG_ROOT_DIR:INTERNAL=C:/vcpkg
+__pkg_config_arguments_PKG_libavcodec:INTERNAL=libavcodec
+__pkg_config_checked_PKG_libavcodec:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_PKG_libavcodec_avcodec
+pkgcfg_lib_PKG_libavcodec_avcodec-ADVANCED:INTERNAL=1
+prefix_result:INTERNAL=C:/vcpkg/installed/x64-windows/lib
 //ADVANCED property for variable: protobuf_MODULE_COMPATIBLE
 protobuf_MODULE_COMPATIBLE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: protobuf_VERBOSE
