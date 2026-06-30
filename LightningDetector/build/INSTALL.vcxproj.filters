@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Owner\Desktop\LightningDetector\build\CMakeFiles\7e78309db119d81793760ad5d623a27e\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{6798E6C2-5D88-3F45-B538-701808E12B4A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

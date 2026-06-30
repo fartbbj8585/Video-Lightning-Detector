@@ -1,0 +1,10 @@
+^C:\USERS\OWNER\DESKTOP\LIGHTNINGDETECTOR\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Owner/Desktop/LightningDetector -BC:/Users/Owner/Desktop/LightningDetector/build --check-stamp-file C:/Users/Owner/Desktop/LightningDetector/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

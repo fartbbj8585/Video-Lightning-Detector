@@ -1,0 +1,10 @@
+^C:\USERS\OWNER\DESKTOP\LIGHTNINGDETECTOR\BUILD\CMAKEFILES\7E78309DB119D81793760AD5D623A27E\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Owner/Desktop/LightningDetector -BC:/Users/Owner/Desktop/LightningDetector/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/Owner/Desktop/LightningDetector/build/LightningDetector.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

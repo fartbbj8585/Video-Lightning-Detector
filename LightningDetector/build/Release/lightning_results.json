@@ -1,0 +1,186 @@
+{
+  "generator": "LightningDetector v1.0",
+  "total_videos_processed": 1,
+  "videos": [
+    {
+      "duration_seconds": 1002.001,
+      "file": "GX010667.MP4",
+      "fps": 239.76023976023976,
+      "lightning_event_count": 21,
+      "lightning_events": [
+        {
+          "confidence": 0.23260000348091125,
+          "confidence_pct": 23.260000228881836,
+          "frame": 63324,
+          "timestamp": "00:04:24.114",
+          "timestamp_seconds": 264.114,
+          "type": "flash"
+        },
+        {
+          "confidence": 0.7591000199317932,
+          "confidence_pct": 75.91000366210938,
+          "frame": 63368,
+          "timestamp": "00:04:24.297",
+          "timestamp_seconds": 264.297,
+          "type": "Intra-cloud"
+        },
+        {
+          "confidence": 0.7601000070571899,
+          "confidence_pct": 76.01000213623047,
+          "frame": 63388,
+          "timestamp": "00:04:24.381",
+          "timestamp_seconds": 264.381,
+          "type": "Intra-cloud"
+        },
+        {
+          "confidence": 0.4578999876976013,
+          "confidence_pct": 45.790000915527344,
+          "frame": 67632,
+          "timestamp": "00:04:42.082",
+          "timestamp_seconds": 282.082,
+          "type": "flash"
+        },
+        {
+          "confidence": 0.2371000051498413,
+          "confidence_pct": 23.709999084472656,
+          "frame": 67740,
+          "timestamp": "00:04:42.532",
+          "timestamp_seconds": 282.532,
+          "type": "flash"
+        },
+        {
+          "confidence": 0.37130001187324524,
+          "confidence_pct": 37.130001068115234,
+          "frame": 112464,
+          "timestamp": "00:07:49.069",
+          "timestamp_seconds": 469.069,
+          "type": "flash"
+        },
+        {
+          "confidence": 0.3089999854564667,
+          "confidence_pct": 30.899999618530273,
+          "frame": 112616,
+          "timestamp": "00:07:49.703",
+          "timestamp_seconds": 469.703,
+          "type": "flash"
+        },
+        {
+          "confidence": 0.2402999997138977,
+          "confidence_pct": 24.030000686645508,
+          "frame": 112636,
+          "timestamp": "00:07:49.786",
+          "timestamp_seconds": 469.786,
+          "type": "flash"
+        },
+        {
+          "confidence": 0.2680000066757202,
+          "confidence_pct": 26.799999237060547,
+          "frame": 112700,
+          "timestamp": "00:07:50.053",
+          "timestamp_seconds": 470.053,
+          "type": "flash"
+        },
+        {
+          "confidence": 0.26600000262260437,
+          "confidence_pct": 26.600000381469727,
+          "frame": 112720,
+          "timestamp": "00:07:50.136",
+          "timestamp_seconds": 470.136,
+          "type": "flash"
+        },
+        {
+          "confidence": 0.7742999792098999,
+          "confidence_pct": 77.43000030517578,
+          "frame": 139524,
+          "timestamp": "00:09:41.931",
+          "timestamp_seconds": 581.931,
+          "type": "Intra-cloud"
+        },
+        {
+          "confidence": 0.38019999861717224,
+          "confidence_pct": 38.02000045776367,
+          "frame": 139568,
+          "timestamp": "00:09:42.115",
+          "timestamp_seconds": 582.115,
+          "type": "flash"
+        },
+        {
+          "confidence": 0.6389999985694885,
+          "confidence_pct": 63.900001525878906,
+          "frame": 139640,
+          "timestamp": "00:09:42.415",
+          "timestamp_seconds": 582.415,
+          "type": "Intra-cloud"
+        },
+        {
+          "confidence": 0.6841999888420105,
+          "confidence_pct": 68.41999816894531,
+          "frame": 139692,
+          "timestamp": "00:09:42.632",
+          "timestamp_seconds": 582.632,
+          "type": "Intra-cloud"
+        },
+        {
+          "confidence": 0.763700008392334,
+          "confidence_pct": 76.37000274658203,
+          "frame": 139716,
+          "timestamp": "00:09:42.732",
+          "timestamp_seconds": 582.732,
+          "type": "Intra-cloud"
+        },
+        {
+          "confidence": 0.31150001287460327,
+          "confidence_pct": 31.149999618530273,
+          "frame": 139736,
+          "timestamp": "00:09:42.816",
+          "timestamp_seconds": 582.816,
+          "type": "flash"
+        },
+        {
+          "confidence": 0.7825000286102295,
+          "confidence_pct": 78.25,
+          "frame": 173768,
+          "timestamp": "00:12:04.757",
+          "timestamp_seconds": 724.757,
+          "type": "Intra-cloud"
+        },
+        {
+          "confidence": 0.7089999914169312,
+          "confidence_pct": 70.9000015258789,
+          "frame": 173812,
+          "timestamp": "00:12:04.941",
+          "timestamp_seconds": 724.941,
+          "type": "Intra-cloud"
+        },
+        {
+          "confidence": 0.774399995803833,
+          "confidence_pct": 77.44000244140625,
+          "frame": 212848,
+          "timestamp": "00:14:47.754",
+          "timestamp_seconds": 887.754,
+          "type": "Intra-cloud"
+        },
+        {
+          "confidence": 0.745199978351593,
+          "confidence_pct": 74.5199966430664,
+          "frame": 212928,
+          "timestamp": "00:14:48.087",
+          "timestamp_seconds": 888.087,
+          "type": "Intra-cloud"
+        },
+        {
+          "confidence": 0.4300999939441681,
+          "confidence_pct": 43.0099983215332,
+          "frame": 212952,
+          "timestamp": "00:14:48.187",
+          "timestamp_seconds": 888.187,
+          "type": "flash"
+        }
+      ],
+      "path": "W:\\GoPro All\\6-10\\Tyler Hero 10\\GX010667.MP4",
+      "processing_time_seconds": 477.327,
+      "success": true,
+      "total_frames": 240240
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+C:/Users/Owner/Desktop/LightningDetector/build/CMakeFiles/LightningDetector.dir
+C:/Users/Owner/Desktop/LightningDetector/build/CMakeFiles/INSTALL.dir
+C:/Users/Owner/Desktop/LightningDetector/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/Owner/Desktop/LightningDetector/build/CMakeFiles/ZERO_CHECK.dir
