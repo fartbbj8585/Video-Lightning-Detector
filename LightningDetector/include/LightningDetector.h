@@ -26,18 +26,29 @@ struct VideoResult {
 // Progress callback: (videoIndex, totalVideos, framesDone, totalFrames, statusMsg)
 using ProgressCallback = std::function<void(int, int, int, int, const std::string&)>;
 
+// Completion callback: called as soon as each individual video finishes,
+// even if other videos are still being processed in parallel.
+// (videoIndex, result)
+using CompletionCallback = std::function<void(int, const VideoResult&)>;
+
 class LightningDetector {
 public:
     LightningDetector();
     ~LightningDetector();
 
-    // Analyse a list of video files. Calls progress_cb periodically.
+    // Analyse a list of video files. Calls progress_cb periodically and
+    // completion_cb as soon as each individual video finishes.
     std::vector<VideoResult> analyseVideos(
         const std::vector<std::string>& video_paths,
-        ProgressCallback progress_cb = nullptr);
+        ProgressCallback progress_cb = nullptr,
+        CompletionCallback completion_cb = nullptr);
 
     // Save results to a JSON file
     static bool saveJSON(const std::vector<VideoResult>& results,
+                         const std::string& output_path);
+
+    // Save results to a CSV file
+    static bool saveCSV(const std::vector<VideoResult>& results,
                          const std::string& output_path);
 
     // Tuneable parameters

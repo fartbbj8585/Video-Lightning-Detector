@@ -133,6 +133,36 @@ static std::string classify_lightning(float confidence, const ShapeMetrics& sm) 
     return "flash";
 }
 
+// Merge events that land within `window_seconds` of the previous kept event
+// into a single entry. Rapid flicker (e.g. a strike with several bright
+// sub-pulses) otherwise produces a run of near-duplicate events a fraction
+// of a second apart, which bloats the saved JSON/CSV without adding useful
+// information. Events are already produced in chronological order, so a
+// single forward pass is enough. Within a merged cluster we keep whichever
+// single event had the highest confidence, since it best represents the
+// cluster's peak.
+static void mergeCloseEvents(std::vector<LightningEvent>& events, double window_seconds) {
+    if (events.size() < 2) return;
+    std::vector<LightningEvent> merged;
+    merged.reserve(events.size());
+    merged.push_back(events[0]);
+    for (size_t i = 1; i < events.size(); ++i) {
+        LightningEvent& last = merged.back();
+        const LightningEvent& cur = events[i];
+        if (cur.timestamp_seconds - last.timestamp_seconds < window_seconds) {
+            if (cur.confidence > last.confidence) {
+                last.frame_number      = cur.frame_number;
+                last.timestamp_seconds = cur.timestamp_seconds;
+                last.confidence        = cur.confidence;
+                last.description       = cur.description;
+            }
+        } else {
+            merged.push_back(cur);
+        }
+    }
+    events.swap(merged);
+}
+
 // ---------------------------------------------------------------------------
 //  LightningDetector
 // ---------------------------------------------------------------------------
@@ -363,6 +393,11 @@ VideoResult LightningDetector::processSingleVideo(
     // Close any event still open at the end of the video.
     if (in_event) closeEvent();
 
+    // Collapse events that occur within 1 second of each other into a
+    // single event, so a burst of rapid flashes doesn't produce a run of
+    // near-duplicate entries in the saved output.
+    mergeCloseEvents(result.events, 1.0);
+
     cap.release();
 
     result.processing_time_seconds =
@@ -377,7 +412,8 @@ VideoResult LightningDetector::processSingleVideo(
 
 std::vector<VideoResult> LightningDetector::analyseVideos(
     const std::vector<std::string>& video_paths,
-    ProgressCallback progress_cb)
+    ProgressCallback progress_cb,
+    CompletionCallback completion_cb)
 {
     // -----------------------------------------------------------------------
     //  GPU / OpenCL device selection
@@ -430,6 +466,12 @@ std::vector<VideoResult> LightningDetector::analyseVideos(
                 [&, idx](int vi, int vt, int fd, int ft, const std::string& msg) {
                     safe_cb(vi, vt, fd, ft, msg);
                 });
+            // Fire the per-video completion callback immediately, while
+            // other videos may still be processing on other threads.
+            if (completion_cb) {
+                std::lock_guard<std::mutex> lk(mtx_cb);
+                completion_cb(idx, results[idx]);
+            }
             safe_cb(idx, n, results[idx].total_frames, results[idx].total_frames,
                     "Done: " + results[idx].video_filename);
         }
@@ -498,5 +540,68 @@ bool LightningDetector::saveJSON(
     std::ofstream f(output_path);
     if (!f.is_open()) return false;
     f << root.dump(2);
+    return true;
+}
+
+// ---------------------------------------------------------------------------
+//  CSV serialisation
+// ---------------------------------------------------------------------------
+
+bool LightningDetector::saveCSV(
+    const std::vector<VideoResult>& results,
+    const std::string& output_path)
+{
+    // Escape a field for CSV: wrap in quotes if it contains comma or quote
+    auto esc = [](const std::string& s) -> std::string {
+        if (s.find_first_of(",\"") == std::string::npos) return s;
+        std::string r = "\"";
+        for (char c : s) { if (c == '"') r += "\"\""; else r += c; }
+        r += "\"";
+        return r;
+    };
+
+    std::ofstream f(output_path);
+    if (!f.is_open()) return false;
+
+    f << "VideoFile,VideoPath,Success,DurationSeconds,TotalFrames,FPS,"
+         "ProcessingTimeSeconds,LightningEventCount,"
+         "Frame,Timestamp,TimestampSeconds,Confidence,ConfidencePct,Type\n";
+
+    for (auto& r : results) {
+        if (r.events.empty()) {
+            // One row per video even if no events
+            f << esc(r.video_filename) << "," << esc(r.video_path) << ","
+              << (r.success ? "true" : "false") << ","
+              << std::fixed << std::setprecision(3) << r.duration_seconds << ","
+              << r.total_frames << ","
+              << std::setprecision(3) << r.fps << ","
+              << std::round(r.processing_time_seconds*1000.0)/1000.0 << ","
+              << 0 << ",,,,,,\n";
+            continue;
+        }
+        for (auto& ev : r.events) {
+            int    h = (int)(ev.timestamp_seconds / 3600);
+            int    m = (int)(ev.timestamp_seconds / 60) % 60;
+            double s = std::fmod(ev.timestamp_seconds, 60.0);
+            std::ostringstream ts;
+            ts << std::setfill('0') << std::setw(2) << h << ":"
+               << std::setw(2) << m << ":"
+               << std::setw(6) << std::fixed << std::setprecision(3) << s;
+
+            f << esc(r.video_filename) << "," << esc(r.video_path) << ","
+              << (r.success ? "true" : "false") << ","
+              << std::fixed << std::setprecision(3) << r.duration_seconds << ","
+              << r.total_frames << ","
+              << std::setprecision(3) << r.fps << ","
+              << std::round(r.processing_time_seconds*1000.0)/1000.0 << ","
+              << (int)r.events.size() << ","
+              << ev.frame_number << ","
+              << ts.str() << ","
+              << std::round(ev.timestamp_seconds*1000.0)/1000.0 << ","
+              << std::round(ev.confidence*100.0f)/100.0f << ","
+              << std::round(ev.confidence*10000.0f)/100.0f << ","
+              << esc(ev.description) << "\n";
+        }
+    }
     return true;
 }
